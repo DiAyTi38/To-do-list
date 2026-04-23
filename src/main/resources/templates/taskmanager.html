@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html class="light" lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>FocusTask Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#777587",
+                        "inverse-surface": "#2d3133",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "surface-bright": "#f7f9fb",
+                        "on-primary-container": "#dad7ff",
+                        "on-background": "#191c1e",
+                        "surface-container-low": "#f2f4f6",
+                        "primary-container": "#4f46e5",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#d8dadc",
+                        "background": "#f7f9fb",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#c3c0ff",
+                        "surface": "#f7f9fb",
+                        "on-surface-variant": "#464555",
+                        "on-surface": "#191c1e",
+                        "primary-fixed": "#e2dfff",
+                        "outline-variant": "#c7c4d8",
+                        "error": "#ba1a1a",
+                        "surface-container": "#eceef0",
+                        "error-container": "#ffdad6",
+                        "primary": "#3525cd",
+                        "surface-tint": "#4d44e3",
+                        "surface-container-high": "#e6e8ea",
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.125rem",
+                        lg: "0.25rem",
+                        xl: "0.5rem",
+                        full: "0.75rem"
+                    },
+                    fontFamily: {
+                        manrope: ["Manrope"],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { background-color: #F8FAFC; }
+
+        /* Modal overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(2px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+
+        /* Task completed style */
+        .task-completed .task-title { text-decoration: line-through; color: #94a3b8; }
+        .task-completed { opacity: 0.65; }
+    </style>
+</head>
+<body class="font-sans text-slate-800">
+
+<div class="flex min-h-screen">
+
+    <!-- ── Sidebar ── -->
+    <aside class="hidden lg:flex flex-col fixed left-0 top-0 h-screen py-8 px-4 gap-2 w-64 bg-white border-r border-slate-100 overflow-y-auto">
+        <div class="px-4 mb-8">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">F</div>
+                <div>
+                    <h2 class="font-semibold text-slate-900 leading-tight">Workspace</h2>
+                    <p class="text-xs text-slate-500">Personal Tasks</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="space-y-1">
+            <a class="flex items-center justify-between px-4 py-2.5 rounded-lg bg-indigo-50 text-indigo-700 font-semibold" href="#">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined">today</span>
+                    <span class="font-manrope text-sm font-medium">Today</span>
+                </div>
+                <span class="text-[10px] bg-indigo-200/50 px-1.5 py-0.5 rounded-full font-bold"
+                      th:text="${tasks != null ? tasks.size() : 0}">0</span>
+            </a>
+            <a class="flex items-center justify-between px-4 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-all" href="#">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <span class="font-manrope text-sm font-medium">Completed</span>
+                </div>
+                <span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded-full font-bold text-slate-400"
+                      th:text="${tasks != null ? #lists.size(tasks.?[completed == true]) : 0}">0</span>
+            </a>
+        </nav>
+
+        <div class="mt-auto px-4 py-4">
+            <button onclick="openAddModal()"
+                    class="w-full flex items-center justify-center gap-2 py-2 px-4 bg-indigo-600 text-white rounded-lg font-semibold text-sm hover:bg-indigo-700 transition-colors active:scale-[0.98]">
+                <span class="material-symbols-outlined text-sm">add</span>
+                Add Task
+            </button>
+        </div>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="flex-1 lg:ml-64 bg-slate-50 pb-24">
+
+        <!-- TopBar -->
+        <header class="sticky top-0 z-50 flex items-center justify-between w-full px-8 py-4 bg-white/80 backdrop-blur-md border-b border-slate-200">
+            <h1 class="text-xl font-bold text-slate-900 tracking-tight">FocusTask</h1>
+            <div class="flex items-center gap-4">
+                <div class="relative hidden sm:block">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+                    <input id="searchInput" onkeyup="filterTasks()"
+                           class="bg-slate-50 border border-slate-200 rounded-full py-2 pl-10 pr-4 text-sm w-64 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                           placeholder="Search tasks..." type="text"/>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">U</div>
+            </div>
+        </header>
+
+        <div class="max-w-5xl mx-auto px-8 pt-10">
+
+            <!-- Stats Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="bg-white p-6 rounded-xl border border-slate-200">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Tasks</span>
+                    <div class="flex items-end justify-between mt-2">
+                        <span class="text-4xl font-bold text-slate-900" th:text="${tasks != null ? tasks.size() : 0}">0</span>
+                        <span class="text-indigo-600 font-semibold mb-1">All</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-1.5 rounded-full mt-4 overflow-hidden">
+                        <div class="bg-indigo-600 h-full transition-all"
+                             th:style="${tasks != null and tasks.size() > 0 ? 'width: ' + (100 * #lists.size(tasks.?[completed == true]) / tasks.size()) + '%' : 'width: 0%'}"></div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-slate-200">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Completed</span>
+                    <div class="flex items-end justify-between mt-2">
+                        <span class="text-4xl font-bold text-emerald-500"
+                              th:text="${tasks != null ? #lists.size(tasks.?[completed == true]) : 0}">0</span>
+                        <span class="material-symbols-outlined text-emerald-400 mb-1">check_circle</span>
+                    </div>
+                    <div class="mt-4 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-emerald-500 text-sm">trending_up</span>
+                        <span class="text-xs text-slate-400">Done &amp; dusted</span>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-slate-200">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Remaining</span>
+                    <div class="flex items-end justify-between mt-2">
+                        <span class="text-4xl font-bold text-amber-500"
+                              th:text="${tasks != null ? #lists.size(tasks.?[completed == false]) : 0}">0</span>
+                        <span class="material-symbols-outlined text-amber-400 mb-1">pending</span>
+                    </div>
+                    <div class="mt-4 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-amber-400 text-sm">schedule</span>
+                        <span class="text-xs text-slate-400">Keep going!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task List -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-slate-900">All Tasks</h2>
+                    <button onclick="openAddModal()"
+                            class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors active:scale-[0.98]">
+                        <span class="material-symbols-outlined text-sm">add</span> New Task
+                    </button>
+                </div>
+
+                <!-- Task items -->
+                <div id="taskList" class="divide-y divide-slate-100">
+
+                    <!-- Empty state -->
+                    <div th:if="${tasks == null or tasks.empty}"
+                         class="flex flex-col items-center justify-center py-20 text-slate-400">
+                        <span class="material-symbols-outlined text-6xl mb-4">task_alt</span>
+                        <p class="text-lg font-semibold">No tasks yet</p>
+                        <p class="text-sm mt-1">Click "New Task" to add your first task.</p>
+                    </div>
+
+                    <!-- Task rows -->
+                    <div th:each="task : ${tasks}"
+                         th:classappend="${task.completed} ? 'task-completed' : ''"
+                         class="task-row px-8 py-5 flex items-start gap-5 hover:bg-slate-50 transition-all group">
+
+                        <!-- Checkbox to toggle complete -->
+                        <form th:action="@{/toggle/{id}(id=${task.id})}" method="get" class="flex items-center pt-1">
+                            <button type="submit"
+                                    th:class="${task.completed} ? 'w-6 h-6 rounded-full border-2 border-emerald-400 bg-emerald-400 flex items-center justify-center cursor-pointer' : 'w-6 h-6 rounded-full border-2 border-slate-300 hover:border-indigo-400 flex items-center justify-center cursor-pointer transition-colors'">
+                                <span th:if="${task.completed}" class="material-symbols-outlined text-white text-sm">check</span>
+                            </button>
+                        </form>
+
+                        <!-- Task Content -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h3 class="task-title text-base font-semibold text-slate-800 truncate"
+                                    th:text="${task.title}">Task Title</h3>
+                                <span th:if="${task.completed}"
+                                      class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                    Done
+                                </span>
+                                <span th:unless="${task.completed}"
+                                      class="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                    Pending
+                                </span>
+                            </div>
+                            <p th:if="${task.description != null and !task.description.empty}"
+                               class="text-sm text-slate-500 mt-1 truncate"
+                               th:text="${task.description}">Description</p>
+                        </div>
+
+                        <!-- Actions (visible on hover) -->
+                        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="openEditModal([[${task.id}]], [[${task.title}]], [[${task.description}]], [[${task.completed}]])"
+                                    class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
+                                <span class="material-symbols-outlined text-lg">edit</span>
+                            </button>
+                            <form th:action="@{/delete/{id}(id=${task.id})}" method="get"
+                                  onsubmit="return confirm('Delete this task?')">
+                                <button type="submit"
+                                        class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div><!-- /task list -->
+
+        </div>
+    </main>
+</div>
+
+<!-- FAB (mobile) -->
+<button onclick="openAddModal()"
+        class="fixed bottom-8 right-8 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-lg shadow-indigo-300 flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all active:scale-95 z-50 lg:hidden">
+    <span class="material-symbols-outlined text-2xl">add</span>
+</button>
+
+<!-- ══════════════════════════════
+     ADD TASK MODAL
+══════════════════════════════ -->
+<div id="addModal" class="modal-overlay" onclick="closeOnBackdrop(event,'addModal')">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8 relative">
+        <button onclick="closeModal('addModal')"
+                class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 transition-colors">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Add New Task</h2>
+        <form th:action="@{/add}" method="post" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Title <span class="text-red-500">*</span></label>
+                <input name="title" required placeholder="What do you need to do?"
+                       class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none transition-all"/>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
+                <textarea name="description" rows="3" placeholder="Optional details..."
+                          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none transition-all resize-none"></textarea>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeModal('addModal')"
+                        class="flex-1 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
+                    Add Task
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ══════════════════════════════
+     EDIT TASK MODAL
+══════════════════════════════ -->
+<div id="editModal" class="modal-overlay" onclick="closeOnBackdrop(event,'editModal')">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8 relative">
+        <button onclick="closeModal('editModal')"
+                class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 transition-colors">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Edit Task</h2>
+        <form id="editForm" method="post" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Title <span class="text-red-500">*</span></label>
+                <input id="editTitle" name="title" required
+                       class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none transition-all"/>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
+                <textarea id="editDescription" name="description" rows="3"
+                          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none transition-all resize-none"></textarea>
+            </div>
+            <div class="flex items-center gap-2">
+                <input id="editCompleted" name="completed" type="checkbox" value="true"
+                       class="w-4 h-4 rounded text-indigo-600"/>
+                <label for="editCompleted" class="text-sm font-semibold text-slate-700">Mark as completed</label>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeModal('editModal')"
+                        class="flex-1 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    /* ── Modal helpers ── */
+    function openAddModal() {
+        document.getElementById('addModal').classList.add('active');
+    }
+    function openEditModal(id, title, description, completed) {
+        document.getElementById('editForm').action = '/edit/' + id;
+        document.getElementById('editTitle').value = title || '';
+        document.getElementById('editDescription').value = description || '';
+        document.getElementById('editCompleted').checked = completed === true || completed === 'true';
+        document.getElementById('editModal').classList.add('active');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+    function closeOnBackdrop(event, id) {
+        if (event.target === document.getElementById(id)) closeModal(id);
+    }
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closeModal('addModal'); closeModal('editModal'); }
+    });
+
+    /* ── Search / filter ── */
+    function filterTasks() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('.task-row').forEach(row => {
+            const title = row.querySelector('.task-title')?.textContent?.toLowerCase() || '';
+            row.style.display = title.includes(q) ? '' : 'none';
+        });
+    }
+</script>
+
+</body>
+</html>
