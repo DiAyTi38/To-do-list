@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List - Search & Filter</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📋 My To-Do List</h1>
+        </header>
+
+        <!-- Search & Filter Section -->
+        <div class="search-filter-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Search by title..." class="search-input">
+                <button onclick="search()" class="btn btn-search">Search</button>
+            </div>
+
+            <div class="filter-box">
+                <select id="statusFilter" class="filter-select" onchange="applyFilters()">
+                    <option value="">All Status</option>
+                    <option value="pending">⏳ Pending</option>
+                    <option value="in-progress">⚙️ In Progress</option>
+                    <option value="completed">✅ Completed</option>
+                </select>
+
+                <select id="categoryFilter" class="filter-select" onchange="applyFilters()">
+                    <option value="">All Categories</option>
+                    <option value="Work">💼 Work</option>
+                    <option value="Study">📚 Study</option>
+                    <option value="Personal">🎯 Personal</option>
+                </select>
+
+                <button onclick="resetFilters()" class="btn btn-reset">Reset</button>
+            </div>
+        </div>
+
+        <!-- Tasks List -->
+        <div class="tasks-container">
+            <div id="tasksList" class="tasks-list">
+                <!-- Tasks will be rendered here by JS -->
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <p>📭 No tasks found</p>
+        </div>
+    </div>
+
+    <script src="/js/search-filter.js"></script>
+</body>
+</html>
