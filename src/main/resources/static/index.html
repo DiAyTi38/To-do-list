@@ -1,279 +1,431 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todo App</title>
+    <title>Quản Lý Công Việc - To Do List</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        .task-form {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 5px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
-        button {
-            background: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
-        button:hover {
-            background: #0056b3;
-        }
-        .delete-btn {
-            background: #dc3545;
-        }
-        .delete-btn:hover {
-            background: #c82333;
-        }
-        .edit-btn {
-            background: #ffc107;
-            color: black;
-        }
-        .edit-btn:hover {
-            background: #e0a800;
-        }
-        .task-item {
-            padding: 15px;
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
-            border-radius: 5px;
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
             background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
         }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-count {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .overdue-count { color: #dc3545; }
+        .upcoming-count { color: #ffc107; }
+        .normal-count { color: #28a745; }
+
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .tasks-container {
+            display: grid;
+            gap: 15px;
+        }
+
+        .task-card {
+            border-left: 5px solid #ddd;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Status colors - RED for overdue, YELLOW for upcoming, GREEN for normal */
+        .task-card.overdue {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .task-card.overdue .status-badge {
+            background: #dc3545;
+            color: white;
+        }
+
+        .task-card.upcoming {
+            border-left-color: #ffc107;
+            background: #fffbf0;
+        }
+
+        .task-card.upcoming .status-badge {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .task-card.normal {
+            border-left-color: #28a745;
+            background: #f0fdf4;
+        }
+
+        .task-card.normal .status-badge {
+            background: #28a745;
+            color: white;
+        }
+
         .task-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
+
         .task-title {
+            font-size: 1.2em;
             font-weight: bold;
-            font-size: 1.1em;
+            color: #333;
+            flex: 1;
         }
-        .task-status {
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 0.8em;
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
             font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .status-normal { background: #d4edda; color: #155724; }
-        .status-upcoming { background: #fff3cd; color: #856404; }
-        .status-overdue { background: #f8d7da; color: #721c24; }
-        .task-details {
-            margin-top: 10px;
+
+        .task-description {
             color: #666;
+            margin: 10px 0;
+            font-size: 0.95em;
         }
+
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .deadline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .deadline-icon {
+            font-size: 1.2em;
+        }
+
+        .category {
+            display: inline-block;
+            background: #e9ecef;
+            color: #495057;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
         .loading {
             text-align: center;
-            padding: 20px;
+            padding: 40px;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .stats {
+                gap: 15px;
+            }
+
+            .task-header {
+                flex-direction: column;
+            }
+
+            .task-meta {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📝 My Todo List</h1>
+        <header>
+            <h1>📝 Quản Lý Công Việc</h1>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-count overdue-count" id="overdueCount">0</div>
+                    <div class="stat-label">🔴 Quá Hạn</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-count upcoming-count" id="upcomingCount">0</div>
+                    <div class="stat-label">🟡 Sắp Hết Hạn</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-count normal-count" id="normalCount">0</div>
+                    <div class="stat-label">🟢 Chưa Đến Hạn</div>
+                </div>
+            </div>
+        </header>
 
-        <div class="task-form">
-            <h2>Add New Task</h2>
-            <form id="taskForm">
-                <div class="form-group">
-                    <label for="title">Title:</label>
-                    <input type="text" id="title" required>
-                </div>
-                <div class="form-group">
-                    <label for="description">Description:</label>
-                    <textarea id="description" rows="3" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="deadline">Deadline:</label>
-                    <input type="date" id="deadline" required>
-                </div>
-                <div class="form-group">
-                    <label for="category">Category:</label>
-                    <select id="category">
-                        <option value="Work">Work</option>
-                        <option value="Personal">Personal</option>
-                        <option value="Study">Study</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <button type="submit">Add Task</button>
-                <button type="button" id="cancelBtn" style="display:none;">Cancel</button>
-            </form>
+        <div class="filter-section">
+            <button class="filter-btn active" onclick="filterTasks('all')">Tất Cả</button>
+            <button class="filter-btn" onclick="filterTasks('overdue')">🔴 Quá Hạn</button>
+            <button class="filter-btn" onclick="filterTasks('upcoming')">🟡 Sắp Hết Hạn</button>
+            <button class="filter-btn" onclick="filterTasks('normal')">🟢 Chưa Đến Hạn</button>
         </div>
 
-        <div id="loading" class="loading">Loading tasks...</div>
-        <div id="taskList"></div>
+        <div id="errorMsg"></div>
+        <div class="loading" id="loading">Đang tải công việc...</div>
+        <div class="tasks-container" id="tasksContainer"></div>
     </div>
 
     <script>
-        const API_BASE = '/api/tasks';
-        let editingTaskId = null;
+        let allTasks = [];
+        let currentFilter = 'all';
+
+        function getTaskStatus(deadline) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const deadlineDate = new Date(deadline);
+            deadlineDate.setHours(0, 0, 0, 0);
+
+            const daysUntilDeadline = Math.floor((deadlineDate - today) / (1000 * 60 * 60 * 24));
+
+            if (daysUntilDeadline < 0) {
+                return 'overdue';
+            } else if (daysUntilDeadline <= 3) {
+                return 'upcoming';
+            } else {
+                return 'normal';
+            }
+        }
+
+        function formatDeadline(deadline) {
+            const date = new Date(deadline);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            date.setHours(0, 0, 0, 0);
+
+            const daysUntil = Math.floor((date - today) / (1000 * 60 * 60 * 24));
+
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const dateStr = date.toLocaleDateString('vi-VN', options);
+
+            if (daysUntil < 0) {
+                return `${dateStr} (${Math.abs(daysUntil)} ngày trước)`;
+            } else if (daysUntil === 0) {
+                return `${dateStr} (Hôm nay)`;
+            } else if (daysUntil === 1) {
+                return `${dateStr} (Ngày mai)`;
+            } else {
+                return `${dateStr} (${daysUntil} ngày nữa)`;
+            }
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'overdue': '🔴 Quá Hạn',
+                'upcoming': '🟡 Sắp Hết Hạn',
+                'normal': '🟢 Chưa Đến Hạn'
+            };
+            return statusMap[status] || status;
+        }
+
+        function loadTasks() {
+            const loadingEl = document.getElementById('loading');
+            const tasksContainer = document.getElementById('tasksContainer');
+            const errorMsg = document.getElementById('errorMsg');
+
+            fetch('/api/tasks')
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to load tasks');
+                    return response.json();
+                })
+                .then(data => {
+                    allTasks = data.map(task => ({
+                        ...task,
+                        status: getTaskStatus(task.deadline)
+                    }));
+
+                    updateStats();
+                    displayTasks();
+                    loadingEl.style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loadingEl.style.display = 'none';
+                    errorMsg.innerHTML = `<div class="error">❌ Lỗi tải dữ liệu: ${error.message}</div>`;
+                });
+        }
+
+        function updateStats() {
+            const overdue = allTasks.filter(t => t.status === 'overdue').length;
+            const upcoming = allTasks.filter(t => t.status === 'upcoming').length;
+            const normal = allTasks.filter(t => t.status === 'normal').length;
+
+            document.getElementById('overdueCount').textContent = overdue;
+            document.getElementById('upcomingCount').textContent = upcoming;
+            document.getElementById('normalCount').textContent = normal;
+        }
+
+        function filterTasks(filter) {
+            currentFilter = filter;
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            displayTasks();
+        }
+
+        function displayTasks() {
+            const tasksContainer = document.getElementById('tasksContainer');
+            
+            let filteredTasks = allTasks;
+            if (currentFilter !== 'all') {
+                filteredTasks = allTasks.filter(t => t.status === currentFilter);
+            }
+
+            if (filteredTasks.length === 0) {
+                tasksContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">✨</div>
+                        <p>Không có công việc nào</p>
+                    </div>
+                `;
+                return;
+            }
+
+            tasksContainer.innerHTML = filteredTasks.map(task => `
+                <div class="task-card ${task.status}">
+                    <div class="task-header">
+                        <div class="task-title">${task.title || 'Không có tiêu đề'}</div>
+                        <span class="status-badge">${getStatusText(task.status)}</span>
+                    </div>
+                    <div class="task-description">${task.description || ''}</div>
+                    <div class="task-meta">
+                        <div class="deadline">
+                            <span class="deadline-icon">📅</span>
+                            <span>${formatDeadline(task.deadline)}</span>
+                        </div>
+                        ${task.category ? `<span class="category">${task.category}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
 
         // Load tasks on page load
         document.addEventListener('DOMContentLoaded', loadTasks);
 
-        // Handle form submission
-        document.getElementById('taskForm').addEventListener('submit', handleFormSubmit);
-
-        // Handle cancel button
-        document.getElementById('cancelBtn').addEventListener('click', cancelEdit);
-
-        async function loadTasks() {
-            try {
-                const response = await fetch(`${API_BASE}/with-status`);
-                const tasks = await response.json();
-                displayTasks(tasks);
-            } catch (error) {
-                console.error('Error loading tasks:', error);
-                document.getElementById('taskList').innerHTML = '<p>Error loading tasks</p>';
-            }
-            document.getElementById('loading').style.display = 'none';
-        }
-
-        function displayTasks(tasks) {
-            const taskList = document.getElementById('taskList');
-            taskList.innerHTML = '';
-
-            if (tasks.length === 0) {
-                taskList.innerHTML = '<p>No tasks yet. Add your first task above!</p>';
-                return;
-            }
-
-            tasks.forEach(task => {
-                const taskDiv = document.createElement('div');
-                taskDiv.className = 'task-item';
-
-                const statusClass = `status-${task.status.toLowerCase()}`;
-
-                taskDiv.innerHTML = `
-                    <div class="task-header">
-                        <span class="task-title">${task.title}</span>
-                        <div>
-                            <span class="task-status ${statusClass}">${task.status}</span>
-                            <button class="edit-btn" onclick="editTask(${task.id})">Edit</button>
-                            <button class="delete-btn" onclick="deleteTask(${task.id})">Delete</button>
-                        </div>
-                    </div>
-                    <div class="task-details">
-                        <p>${task.description}</p>
-                        <p><strong>Category:</strong> ${task.category}</p>
-                        <p><strong>Deadline:</strong> ${new Date(task.deadline).toLocaleDateString()}</p>
-                        <p><strong>Created:</strong> ${new Date(task.createdAt).toLocaleDateString()}</p>
-                    </div>
-                `;
-
-                taskList.appendChild(taskDiv);
-            });
-        }
-
-        async function handleFormSubmit(event) {
-            event.preventDefault();
-
-            const task = {
-                title: document.getElementById('title').value,
-                description: document.getElementById('description').value,
-                deadline: document.getElementById('deadline').value,
-                category: document.getElementById('category').value
-            };
-
-            try {
-                if (editingTaskId) {
-                    // Update existing task
-                    await fetch(`${API_BASE}/${editingTaskId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(task)
-                    });
-                    editingTaskId = null;
-                    document.getElementById('cancelBtn').style.display = 'none';
-                } else {
-                    // Create new task
-                    await fetch(API_BASE, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(task)
-                    });
-                }
-
-                // Reset form and reload tasks
-                document.getElementById('taskForm').reset();
-                loadTasks();
-            } catch (error) {
-                console.error('Error saving task:', error);
-                alert('Error saving task');
-            }
-        }
-
-        function editTask(id) {
-            // Find task data (you might want to store it or fetch individually)
-            fetch(`${API_BASE}/${id}`)
-                .then(response => response.json())
-                .then(task => {
-                    document.getElementById('title').value = task.title;
-                    document.getElementById('description').value = task.description;
-                    document.getElementById('deadline').value = task.deadline;
-                    document.getElementById('category').value = task.category;
-
-                    editingTaskId = id;
-                    document.getElementById('cancelBtn').style.display = 'inline-block';
-                    document.querySelector('h2').textContent = 'Edit Task';
-                })
-                .catch(error => console.error('Error loading task for edit:', error));
-        }
-
-        function cancelEdit() {
-            document.getElementById('taskForm').reset();
-            editingTaskId = null;
-            document.getElementById('cancelBtn').style.display = 'none';
-            document.querySelector('h2').textContent = 'Add New Task';
-        }
-
-        async function deleteTask(id) {
-            if (confirm('Are you sure you want to delete this task?')) {
-                try {
-                    await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
-                    loadTasks();
-                } catch (error) {
-                    console.error('Error deleting task:', error);
-                    alert('Error deleting task');
-                }
-            }
-        }
+        // Refresh every 30 seconds
+        setInterval(loadTasks, 30000);
     </script>
 </body>
 </html>
