@@ -36,8 +36,8 @@ public class TaskController {
     // ── Sửa task ──────────────────────────────────────────────────────────────
     @PostMapping("/edit/{id}")
     public String editTask(@PathVariable Long id,
-                           @ModelAttribute Task task,
-                           @RequestParam(name = "completed", required = false, defaultValue = "false") String completedStr) {
+            @ModelAttribute Task task,
+            @RequestParam(name = "completed", required = false, defaultValue = "false") String completedStr) {
         // Checkbox HTML chỉ gửi giá trị khi được tick -> cần xử lý riêng
         task.setCompleted("true".equalsIgnoreCase(completedStr) || "on".equalsIgnoreCase(completedStr));
         taskService.updateTask(id, task);

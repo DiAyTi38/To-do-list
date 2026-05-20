@@ -271,7 +271,8 @@
                                 </div>
                                 <div class="flex items-center gap-4 mt-1">
                                     <p th:if="${task.description != null and !task.description.empty}"
-                                        class="text-sm text-slate-500 truncate max-w-[60%]" th:text="${task.description}">
+                                        class="text-sm text-slate-500 truncate max-w-[60%]"
+                                        th:text="${task.description}">
                                         Description
                                     </p>
                                     <p th:if="${task.deadline != null}"
