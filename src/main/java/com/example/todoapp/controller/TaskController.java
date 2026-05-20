@@ -7,6 +7,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
 public class TaskController {
 
@@ -16,7 +18,11 @@ public class TaskController {
     // ── Trang chính ──────────────────────────────────────────────────────────
     @GetMapping("/")
     public String getAllTasks(Model model) {
-        model.addAttribute("tasks", taskService.getAllTasks());
+        List<Task> tasks = taskService.getAllTasks();
+        for (Task t : tasks) {
+            t.setStatus(taskService.getTaskStatus(t.getDeadline()));
+        }
+        model.addAttribute("tasks", tasks);
         return "taskmanager";
     }
 
@@ -54,5 +60,17 @@ public class TaskController {
             taskService.updateTask(id, task);
         }
         return "redirect:/";
+    }
+
+    // ── API để lấy các công việc kèm trạng thái nhắc hẹn (từ nhánh deadline) ──
+    @GetMapping("/api/tasks/with-status")
+    @ResponseBody
+    public List<Task> getTasksWithStatus() {
+        List<Task> tasks = taskService.getAllTasks();
+        for (Task t : tasks) {
+            // Cập nhật trạng thái transient dựa vào deadline
+            t.setStatus(taskService.getTaskStatus(t.getDeadline()));
+        }
+        return tasks;
     }
 }

@@ -5,6 +5,7 @@ import com.example.todoapp.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -31,6 +32,12 @@ public class TaskService {
             existingTask.setTitle(task.getTitle());
             existingTask.setDescription(task.getDescription());
             existingTask.setCompleted(task.isCompleted());
+            if (task.getDeadline() != null) {
+                existingTask.setDeadline(task.getDeadline());
+            }
+            if (task.getCategory() != null) {
+                existingTask.setCategory(task.getCategory());
+            }
             return taskRepository.save(existingTask);
         }
         return null;
@@ -38,5 +45,18 @@ public class TaskService {
 
     public void deleteTask(Long id) {
         taskRepository.deleteById(id);
+    }
+
+    public String getTaskStatus(LocalDate deadline) {
+        if (deadline == null) return "NORMAL";
+        LocalDate today = LocalDate.now();
+
+        if (deadline.isBefore(today)) {
+            return "OVERDUE";
+        } else if (!deadline.isAfter(today.plusDays(3))) {
+            return "UPCOMING";
+        } else {
+            return "NORMAL";
+        }
     }
 }
