@@ -15,7 +15,11 @@ public class TaskService {
     private TaskRepository taskRepository;
 
     public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+        return taskRepository.findAllByOrderByDeadlineAsc();
+    }
+
+    public List<Task> getTasksByCategory(String category) {
+        return taskRepository.findByCategory(category);
     }
 
     public Task getTaskById(Long id) {

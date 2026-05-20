@@ -7,6 +7,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.todoapp.entity.Category;
+
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -17,12 +20,21 @@ public class TaskController {
 
     // ── Trang chính ──────────────────────────────────────────────────────────
     @GetMapping("/")
-    public String getAllTasks(Model model) {
-        List<Task> tasks = taskService.getAllTasks();
+    public String getAllTasks(Model model, @RequestParam(required = false) String category) {
+        List<Task> tasks;
+        if (category != null && !category.isEmpty()) {
+            tasks = taskService.getTasksByCategory(category);
+        } else {
+            tasks = taskService.getAllTasks();
+        }
+        
         for (Task t : tasks) {
             t.setStatus(taskService.getTaskStatus(t.getDeadline()));
         }
+        
         model.addAttribute("tasks", tasks);
+        model.addAttribute("categories", Arrays.asList(Category.values()));
+        model.addAttribute("selectedCategory", category);
         return "taskmanager";
     }
 
