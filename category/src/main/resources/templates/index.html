@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List Application</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📋 My Tasks</h1>
+            <a href="/add" class="btn btn-primary">+ Add New Task</a>
+        </header>
+
+        <div class="filter-section">
+            <h2>Filter</h2>
+            <form method="get" action="/" class="filter-form">
+                <div class="filter-group">
+                    <label for="categoryFilter">Category:</label>
+                    <select id="categoryFilter" name="category">
+                        <option value="">All Categories</option>
+                        <option value="WORK" th:selected="${selectedCategory == 'WORK'}">Work</option>
+                        <option value="STUDY" th:selected="${selectedCategory == 'STUDY'}">Study</option>
+                        <option value="PERSONAL" th:selected="${selectedCategory == 'PERSONAL'}">Personal</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="statusFilter">Status:</label>
+                    <select id="statusFilter" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="PENDING" th:selected="${selectedStatus == 'PENDING'}">Pending</option>
+                        <option value="DONE" th:selected="${selectedStatus == 'DONE'}">Done</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-secondary">Filter</button>
+                <a href="/" class="btn btn-light">Clear</a>
+            </form>
+        </div>
+
+        <div class="tasks-section">
+            <h2>Tasks</h2>
+            <div th:if="${#lists.isEmpty(tasks)}" class="empty-state">
+                <p>No tasks found. <a href="/add">Create one now!</a></p>
+            </div>
+            
+            <div th:unless="${#lists.isEmpty(tasks)}" class="tasks-container">
+                <div th:each="task : ${tasks}" class="task-card" th:classappend="${task.status == 'DONE' ? 'completed' : ''}">
+                    <div class="task-header">
+                        <form th:action="@{/toggle-status/{id}(id=${task.id})}" method="post" class="toggle-form">
+                            <input type="hidden" name="category" th:value="${selectedCategory}">
+                            <input type="checkbox" class="task-checkbox" 
+                                   th:checked="${task.status == 'DONE'}" 
+                                   onchange="this.form.submit()">
+                        </form>
+                        <div class="task-title-section">
+                            <h3 th:text="${task.title}" class="task-title"></h3>
+                            <span class="category-badge" 
+                                  th:classappend="${'category-' + task.category.name().toLowerCase()}"
+                                  th:text="${task.category.label}"></span>
+                        </div>
+                    </div>
+                    
+                    <p th:if="${task.description}" th:text="${task.description}" class="task-description"></p>
+                    
+                    <div class="task-meta">
+                        <span th:if="${task.deadline}" class="deadline">
+                            📅 <th:block th:text="${#temporals.format(task.deadline, 'dd/MM/yyyy')}"></th:block>
+                        </span>
+                        <span class="status-badge" 
+                              th:classappend="${task.status == 'DONE' ? 'status-done' : 'status-pending'}"
+                              th:text="${task.status}"></span>
+                    </div>
+                    
+                    <div class="task-actions">
+                        <a th:href="@{/edit/{id}(id=${task.id})}" class="btn btn-sm btn-edit">Edit</a>
+                        <a th:href="@{/delete/{id}(id=${task.id})}" class="btn btn-sm btn-delete" onclick="return confirm('Are you sure?')">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
