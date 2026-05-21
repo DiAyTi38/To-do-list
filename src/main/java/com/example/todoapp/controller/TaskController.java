@@ -7,6 +7,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.todoapp.entity.Category;
+
+import java.util.Arrays;
+import java.util.List;
+
 @Controller
 public class TaskController {
 
@@ -15,8 +20,21 @@ public class TaskController {
 
     // ── Trang chính ──────────────────────────────────────────────────────────
     @GetMapping("/")
-    public String getAllTasks(Model model) {
-        model.addAttribute("tasks", taskService.getAllTasks());
+    public String getAllTasks(Model model, @RequestParam(required = false) String category) {
+        List<Task> tasks;
+        if (category != null && !category.isEmpty()) {
+            tasks = taskService.getTasksByCategory(category);
+        } else {
+            tasks = taskService.getAllTasks();
+        }
+        
+        for (Task t : tasks) {
+            t.setStatus(taskService.getTaskStatus(t.getDeadline()));
+        }
+        
+        model.addAttribute("tasks", tasks);
+        model.addAttribute("categories", Arrays.asList(Category.values()));
+        model.addAttribute("selectedCategory", category);
         return "taskmanager";
     }
 
@@ -30,8 +48,8 @@ public class TaskController {
     // ── Sửa task ──────────────────────────────────────────────────────────────
     @PostMapping("/edit/{id}")
     public String editTask(@PathVariable Long id,
-                           @ModelAttribute Task task,
-                           @RequestParam(name = "completed", required = false, defaultValue = "false") String completedStr) {
+            @ModelAttribute Task task,
+            @RequestParam(name = "completed", required = false, defaultValue = "false") String completedStr) {
         // Checkbox HTML chỉ gửi giá trị khi được tick -> cần xử lý riêng
         task.setCompleted("true".equalsIgnoreCase(completedStr) || "on".equalsIgnoreCase(completedStr));
         taskService.updateTask(id, task);
@@ -54,5 +72,30 @@ public class TaskController {
             taskService.updateTask(id, task);
         }
         return "redirect:/";
+    }
+
+    // ── API để lấy các công việc kèm trạng thái nhắc hẹn (từ nhánh deadline) ──
+    @GetMapping("/api/tasks/with-status")
+    @ResponseBody
+    public List<Task> getTasksWithStatus() {
+        List<Task> tasks = taskService.getAllTasks();
+        for (Task t : tasks) {
+            // Cập nhật trạng thái transient dựa vào deadline
+            t.setStatus(taskService.getTaskStatus(t.getDeadline()));
+        }
+        return tasks;
+    }
+
+    // ── REST API được lấy từ nhánh reminder ──
+    @GetMapping("/api/tasks")
+    @ResponseBody
+    public List<Task> getAllApiTasks() {
+        return taskService.getAllTasks();
+    }
+
+    @GetMapping("/api/tasks/upcoming")
+    @ResponseBody
+    public List<Task> getUpcomingApiTasks() {
+        return taskService.getUpcomingTasks();
     }
 }

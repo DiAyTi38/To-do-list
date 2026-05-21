@@ -1,5 +1,6 @@
 /Users/trandat/Desktop/workspace/java/To-do-list/src/main/java/com/example/todoapp/TodoappApplication.java
 /Users/trandat/Desktop/workspace/java/To-do-list/src/main/java/com/example/todoapp/controller/TaskController.java
+/Users/trandat/Desktop/workspace/java/To-do-list/src/main/java/com/example/todoapp/entity/Category.java
 /Users/trandat/Desktop/workspace/java/To-do-list/src/main/java/com/example/todoapp/entity/Task.java
 /Users/trandat/Desktop/workspace/java/To-do-list/src/main/java/com/example/todoapp/repository/TaskRepository.java
 /Users/trandat/Desktop/workspace/java/To-do-list/src/main/java/com/example/todoapp/service/TaskService.java

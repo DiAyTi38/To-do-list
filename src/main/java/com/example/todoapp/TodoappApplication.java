@@ -29,13 +29,12 @@ public class TodoappApplication {
 
 			// Sample tasks
 			List<Task> tasks = Arrays.asList(
-				Task.builder().title("Buy groceries").description("Milk, bread, eggs, vegetables").completed(false).build(),
-				Task.builder().title("Finish project proposal").description("Q2 quarterly project proposal").completed(false).build(),
-				Task.builder().title("Study Java Spring Boot").description("Review Spring Data JPA and REST API").completed(false).build(),
-				Task.builder().title("Call client").description("Follow up on project status").completed(true).build(),
-				Task.builder().title("Prepare presentation").description("Create slides for meeting").completed(false).build(),
-				Task.builder().title("Exercise").description("30 minutes jogging").completed(false).build()
-			);
+					new Task("Buy groceries", "Milk, bread, eggs, vegetables", false),
+					new Task("Finish project proposal", "Q2 quarterly project proposal", false),
+					new Task("Study Java Spring Boot", "Review Spring Data JPA and REST API", false),
+					new Task("Call client", "Follow up on project status", true),
+					new Task("Prepare presentation", "Create slides for meeting", false),
+					new Task("Exercise", "30 minutes jogging", false));
 
 			// Save all tasks
 			taskRepository.saveAll(tasks);
