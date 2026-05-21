@@ -18,6 +18,11 @@ public class TaskService {
         return taskRepository.findAllByOrderByDeadlineAsc();
     }
 
+    public List<Task> getUpcomingTasks() {
+        LocalDate today = LocalDate.now();
+        return taskRepository.findByCompletedFalseAndDeadlineBetween(today, today.plusDays(3));
+    }
+
     public List<Task> getTasksByCategory(String category) {
         return taskRepository.findByCategory(category);
     }

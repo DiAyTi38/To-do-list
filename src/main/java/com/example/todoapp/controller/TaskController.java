@@ -85,4 +85,17 @@ public class TaskController {
         }
         return tasks;
     }
+
+    // ── REST API được lấy từ nhánh reminder ──
+    @GetMapping("/api/tasks")
+    @ResponseBody
+    public List<Task> getAllApiTasks() {
+        return taskService.getAllTasks();
+    }
+
+    @GetMapping("/api/tasks/upcoming")
+    @ResponseBody
+    public List<Task> getUpcomingApiTasks() {
+        return taskService.getUpcomingTasks();
+    }
 }
